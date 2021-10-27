@@ -15,12 +15,14 @@ int main() {
 
 	std::cout << "Printing array in reverse order" << std::endl;
 	prnt<int>(arr, length, 1);
+	delete[] arr;
 
 	double* arr2 = create_array<double>(length);
         for (int i = 0; i < length; i++) std::cin >> arr2[i];
 
         std::cout << "Printing array in reverse order" << std::endl;
         prnt<double>(arr2, length, 1);
+	delete[] arr2;
 }
 
 template <typename T>
