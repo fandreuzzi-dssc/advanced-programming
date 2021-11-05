@@ -25,8 +25,8 @@ int cmp(const UniqueStruct<T>& self, const UniqueStruct<T>& other);
 template <typename T>
 UniqueStruct<T> unique_withvec(const std::vector<T> *vec);
 
-template <typename T>
-UniqueStruct<T> unique_withmap(const std::vector<T> *vec, int unordered);
+template <typename T, typename M>
+UniqueStruct<T> unique_withmap(const std::vector<T> *vec, M m);
 
 template <typename T>
 void print(std::vector<T> vec);
@@ -73,8 +73,9 @@ int main() {
 	print(&unique_vec);
 #endif
 
+	std::map<std::string, int> m;
 	t0 = high_resolution_clock::now();
-        auto unique_map = unique_withmap(&store, 0);
+        auto unique_map = unique_withmap(&store, m);
         t1 = high_resolution_clock::now();
 
         std::cout << "Without repetitions [map] (" << duration_cast<milliseconds>(t1-t0).count() << " ms)" << std::endl;
@@ -82,8 +83,9 @@ int main() {
         print(&unique_map);
 #endif
 
+	std::unordered_map<std::string, int> m2;
 	t0 = high_resolution_clock::now();
-        auto unique_umap = unique_withmap(&store, 1);
+        auto unique_umap = unique_withmap(&store, m2);
         t1 = high_resolution_clock::now();
 
         std::cout << "Without repetitions [umap] (" << duration_cast<milliseconds>(t1-t0).count() << " ms)" << std::endl;
@@ -128,40 +130,20 @@ UniqueStruct<T> unique_withvec(const std::vector<T> *vec) {
 	return UniqueStruct<T>{unique, items_count};
 }
 
-template <typename T>
-UniqueStruct<T> unique_withmap(const std::vector<T> *vec, int unordered) {
-	// TODO: can we exploit some kind of polymorphism here?
-	if (unordered) {
-		std::unordered_map<T, int> m;
+template <typename T, typename M>
+UniqueStruct<T> unique_withmap(const std::vector<T> *vec, M m) {
+	for(auto pt : *vec) {
+		if (m.count(pt)) m[pt]++;
+		else m[pt] = 1;
+       	}
 
-		for(auto pt : *vec) {
-			if (m.count(pt)) m[pt]++;
-			else m[pt] = 1;
-        	}
-
-		std::vector<T> keys;
-	        std::vector<int> counts;
-        	for(auto it = m.begin(); it != m.end(); ++it) {
-                	keys.push_back(it->first);
-	                counts.push_back(it->second);
-        	}
-	        return UniqueStruct<T>{keys, counts};
-	} else {
-		std::map<T, int> m;
-
-                for(auto pt : *vec) {
-                        if (m.count(pt)) m[pt]++;
-                        else m[pt] = 1;
-                }
-
-		std::vector<T> keys;
-	        std::vector<int> counts;
-        	for(auto it = m.begin(); it != m.end(); ++it) {
-                	keys.push_back(it->first);
-	                counts.push_back(it->second);
-        	}
-	        return UniqueStruct<T>{keys, counts};
-	}
+	std::vector<T> keys;
+        std::vector<int> counts;
+       	for(auto it = m.begin(); it != m.end(); ++it) {
+               	keys.push_back(it->first);
+                counts.push_back(it->second);
+       	}
+        return UniqueStruct<T>{keys, counts};
 }
 
 template <typename T>
