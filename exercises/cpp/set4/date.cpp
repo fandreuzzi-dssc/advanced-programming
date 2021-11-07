@@ -25,6 +25,9 @@ public:
 	void add_months(const unsigned int n) { add(0,n,0); }
 	void add_years(const unsigned int n) { add(0,0,n); }
 
+	int is_leap() { return _year % 4 == 0 && (_year % 100 != 0 || _year % 400 == 0); }
+	int n_of_days(Month m);
+
 	Month set_next_month() {
 		int nm = static_cast<int>(_month) % 12 + 1;
 		if (nm == 12) { _year += 1; nm = 0; }
@@ -35,23 +38,25 @@ public:
 	void wrap();
 };
 
-int n_of_days(Month m) {
+int Date::n_of_days(Month m) {
 	// unfortunately this doesn't work...
 	// using namespace Month;
+
 	switch(m) {
-		case Month::feb : return 28;
+		case Month::feb : return (is_leap() ? 29 : 28);
 		case Month::nov : case Month::apr : case Month::jun : case Month::sep : return 30;
 		default: return 31;
 	}
 }
 
 void Date::wrap() {
+	while(_temp_month-- > 0) _month = set_next_month();
+
 	int days_in_month;
 	while (_day > (days_in_month=n_of_days(_month))) {
 		_day -= days_in_month;
 		_month = set_next_month();
 	}
-	while(_temp_month-- > 0) _month = set_next_month();
 }
 
 bool operator==(const Date& lhs, const Date& rhs) {
@@ -84,4 +89,16 @@ int main() {
 	std::cout << std::endl << "Adding 25 days and 10 months and 2 years" << std::endl;
 	d.add(25, 10, 2);
 	std::cout << d << std::endl;
+
+	// leap
+	Date dl(15, Month::feb, 2004);
+	std::cout << std::endl << dl << " is " << (dl.is_leap() ? "" : "not ") << "leap" << std::endl;
+	dl.add_days(14);
+
+	std::cout << "Adding 14 days" << std::endl;
+	std::cout << dl << std::endl;
+
+	std::cout << "Adding 12 months" << std::endl;
+	dl.add_months(12);
+	std::cout << dl << " is " << (dl.is_leap() ? "" : "not ") << "leap" << std::endl;
 }
