@@ -27,14 +27,12 @@ public:
 
 	Month set_next_month() {
 		int nm = static_cast<int>(_month) % 12 + 1;
-		if (nm == 12) _year += 1;
+		if (nm == 12) { _year += 1; nm = 0; }
 		return static_cast<Month>(nm);
 	}
 
 	void add(const unsigned int d, const unsigned int m, const unsigned int y) { _day += d; _temp_month = m; _year += y; wrap(); }
 	void wrap();
-
-	void print() const { std::cout << "Date(" << _day << "/" << static_cast<int>(_month)+1 << "/" << _year << ")" << std::endl; }
 };
 
 int n_of_days(Month m) {
@@ -56,15 +54,34 @@ void Date::wrap() {
 	while(_temp_month-- > 0) _month = set_next_month();
 }
 
+bool operator==(const Date& lhs, const Date& rhs) {
+	return lhs.day() == rhs.day() && lhs.month() == rhs.month() && lhs.year() == rhs.year();
+}
+
+bool operator!=(const Date& lhs, const Date& rhs) {
+	return !(lhs == rhs);
+}
+
+std::ostream& operator<<(std::ostream& os, const Date& d) {
+	os << "Date(" << d.day() << "/" << static_cast<int>(d.month())+1 << "/" << d.year() << ")";
+	return os;
+}
+
 int main() {
 	Date d(12, Month::dec, 1999);
-	d.print();
+	std::cout << d << std::endl;
+
+	std::cout << "Adding 20 days" << std::endl;
+	d.add_days(20);
+	Date d1(31, Month::dec, 1999);
+	Date d2(1, Month::jan, 2000);
+	std::cout << d << " " << (d == d1 ? "==" : "!=") << " " << d1 << ", " << d << " " << (d != d2 ? "!=" : "==") << " " << d2 << std::endl;
 
 	std::cout << std::endl << "Adding 90 days" << std::endl;
 	d.add_days(90);
-	d.print();
+	std::cout << d << std::endl;
 
 	std::cout << std::endl << "Adding 25 days and 10 months and 2 years" << std::endl;
 	d.add(25, 10, 2);
-	d.print();
+	std::cout << d << std::endl;
 }
